@@ -3,6 +3,36 @@
 const btn = document.querySelector('.btn-country');
 const countriesContainer = document.querySelector('.countries');
 
+// Render Country Function
+const renderCountry = function (data, className = '') {
+  const html = `
+  <article class="country ${className}">
+          <img class="country__img" src="${data.flags.svg}" />
+          <div class="country__data">
+            <h3 class="country__name">${data.name.common}</h3>
+            <h4 class="country__region">${data.region}</h4>
+            <p class="country__row"><span>👫</span>${(
+              +data.population / 1000000
+            ).toFixed(1)}</p>
+            <p class="country__row"><span>🗣️</span>${
+              Object.values(data.currencies)[0].name
+            }</p>
+            <p class="country__row"><span>💰</span>${
+              Object.values(data.languages)[0]
+            }</p>
+          </div>
+        </article>
+  `;
+
+  countriesContainer.insertAdjacentHTML('beforeend', html);
+};
+
+
+// Render Error Message Funtion
+const renderError = function(message) {
+  countriesContainer.insertAdjacentText('beforeend', message);
+}
+
 ///////////////////////////////////////
 // Old school XTMLHttp Request
 /*
@@ -41,7 +71,7 @@ getCountryData('portugal');
 getCountryData('japan');
 getCountryData('usa');
 */
-
+////////////////////////////////////////////////////////////////////
 // Callback Hell
 /*
 const renderCountry = function (data, className = '') {
@@ -122,5 +152,82 @@ const request = new XMLHttpRequest();
   request.send();
   */
 
+////////////////////////////////////////////////////////////////////////////////////
+// Promises and Fetch
 const request = fetch('https://restcountries.com/v3.1/name/portugal');
 console.log(request);
+
+/*
+const getCountryData = function(country) {
+  fetch(`https://restcountries.com/v3.1/name/${country}`).then(function(response){
+    console.log(response);
+   return response.json();
+  }).then(function(data) {
+    console.log(data);
+    renderCountry(data[0])
+    
+  })
+};
+*/
+/*
+const getCountryData = function (country) {
+  // Country 2
+  fetch(`https://restcountries.com/v3.1/name/${country}`)
+    .then(response => response.json())
+    .then(data => {
+      renderCountry(data[0]);
+      const neighbour = data[0].borders?.[0];
+
+      // Country 2
+     return fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`)
+    }).then(response => response.json())
+    .then(data => renderCountry(data[0], 'neighbour'));
+};
+getCountryData('portugal');
+*/
+/////// Do not chain promise inside promise!!!!
+/*
+const getCountryData = function (country) {
+  // Country 2
+  fetch(`https://restcountries.com/v3.1/name/${country}`)
+    .then(response => response.json())
+    .then(data => {
+      renderCountry(data[0]);
+      const neighbour = data[0].borders?.[0];
+
+      // Country 2
+     return fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`).then(response => response.json())
+     .then(data => renderCountry(data[0], 'neighbour'));
+    })
+};
+*/
+/////////////////////////////////////////////////////////////////////////
+// Handling Rejected Promises
+
+
+
+const getCountryData = function (country) {
+  // Country 2
+  fetch(`https://restcountries.com/v3.1/name/${country}`)
+    .then(response => response.json())
+    .then(data => {
+      renderCountry(data[0]);
+      const neighbour = data[0].borders?.[0];
+
+      // Country 2
+      return fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`);
+    })
+    .then(response => response.json())
+    .then(data => renderCountry(data[0], 'neighbour'))
+    .catch(err => {
+      console.log(err);
+      renderError(`Something went wrong ${err.message}`)
+    })
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    })
+};
+
+btn.addEventListener('click', function () {
+  getCountryData('gfdgdfgd');
+});
