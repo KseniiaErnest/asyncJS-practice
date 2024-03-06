@@ -27,11 +27,10 @@ const renderCountry = function (data, className = '') {
   countriesContainer.insertAdjacentHTML('beforeend', html);
 };
 
-
 // Render Error Message Funtion
-const renderError = function(message) {
+const renderError = function (message) {
   countriesContainer.insertAdjacentText('beforeend', message);
-}
+};
 
 ///////////////////////////////////////
 // Old school XTMLHttp Request
@@ -154,8 +153,8 @@ const request = new XMLHttpRequest();
 
 ////////////////////////////////////////////////////////////////////////////////////
 // Promises and Fetch
-const request = fetch('https://restcountries.com/v3.1/name/portugal');
-console.log(request);
+// const request = fetch('https://restcountries.com/v3.1/name/portugal');
+// console.log(request);
 
 /*
 const getCountryData = function(country) {
@@ -203,11 +202,9 @@ const getCountryData = function (country) {
 */
 /////////////////////////////////////////////////////////////////////////
 // Handling Rejected Promises
-
-
-
+/*
 const getCountryData = function (country) {
-  // Country 2
+  // Country 1
   fetch(`https://restcountries.com/v3.1/name/${country}`)
     .then(response => response.json())
     .then(data => {
@@ -231,3 +228,104 @@ const getCountryData = function (country) {
 btn.addEventListener('click', function () {
   getCountryData('gfdgdfgd');
 });
+*/
+
+/////////////////////////////////////////////////////////////////////
+
+const getJSON = function (url, errorMessage = 'Something went wrong') {
+  return fetch(url).then(response => {
+    if (!response.ok) throw new Error(`${errorMessage} ${response.status}`);
+
+    return response.json();
+  });
+};
+
+// Throwing Errors Manually
+/*
+const getCountryData = function (country) {
+  // Country 1
+  fetch(`https://restcountries.com/v3.1/name/${country}`)
+    .then(response => {
+      if (!response.ok) throw new Error(`Country not found ${response.status}`);
+      return response.json()
+    })
+    .then(data => {
+      renderCountry(data[0]);
+      const neighbour = data[0].borders?.[0];
+
+      // Country 2
+      return fetch(`https://restcountries.com/v3.1/alpha/${neighbour}`);
+    })
+    .then(response => response.json())
+    .then(data => renderCountry(data[0], 'neighbour'))
+    .catch(err => {
+      console.log(err);
+      renderError(`Something went wrong ${err.message}`)
+    })
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    })
+};
+
+btn.addEventListener('click', function () {
+  getCountryData('gfdgdfgd');
+});
+*/
+/////////////////////////////////////////////////
+// Refactore the code by adding getJSON helper function
+const getCountryData = function (country) {
+  // Country 1
+  getJSON(`https://restcountries.com/v3.1/name/${country}`, 'Country not found')
+    .then(data => {
+      renderCountry(data[0]);
+      const neighbour = data[0].borders?.[0];
+      if (!neighbour) throw new Error('No neighbour found!');
+
+      // Country 2
+      return getJSON(
+        `https://restcountries.com/v3.1/alpha/${neighbour}`,
+        'Country not found'
+      );
+    })
+    .then(data => renderCountry(data[0], 'neighbour'))
+    .catch(err => {
+      console.log(err);
+      renderError(`Something went wrong ${err.message}`);
+    })
+    .finally(() => {
+      countriesContainer.style.opacity = 1;
+    });
+};
+
+btn.addEventListener('click', function () {
+  getCountryData('australia');
+});
+
+// getCountryData('australia');
+
+////////////////////////
+const whereAmI = function (lat, lng) {
+  // Reverse geocoding
+  fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Something went wrong ${response.status}`);
+      }
+
+      return response.json();
+    })
+    .then(data => {
+      console.log(data);
+      console.log(`You are in ${data.city}, ${data.country}`);
+
+      const countryName = data.country;
+
+      return getCountryData(countryName);
+    })
+    .catch(err => {
+      console.log(err);
+      renderError(`Something went wrong ${err.message}`);
+    });
+};
+
+whereAmI(-33.933, 18.474);
