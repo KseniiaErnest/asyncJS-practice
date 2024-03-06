@@ -1,24 +1,12 @@
 'use strict';
 
-const whereAmI = function (lat, lng) {
-  // Reverse geocoding
-  fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Something went wrong ${response.status}`);
-      }
-
-      return response.json();
-    })
-    .then(data => {
-      console.log(data);
-      console.log(`You are in ${data.city}, ${data.country}`);
-
-      const country = data.country;
-    })
-    .catch(err => {
-      console.log(err);
-    });
-};
-
-whereAmI(52.508, 13.381);
+// The Event Loop in Practice
+console.log('Test start');
+setTimeout(() => console.log('0 sec timer', 0));
+Promise.resolve('Resolved promise 1').then(res => console.log(res));
+Promise.resolve('Resolved promise 2').then(res => {
+  for (let i = 0; i < 10000; i++) {
+    console.log(res);
+  }
+})
+console.log('Test end');
