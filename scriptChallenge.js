@@ -62,6 +62,7 @@ createImg('/img/img-1.jpg')
     currentImage.style.display = 'none';
     return createImg('/img/img-2.jpg');
   }).then((img) => {
+    currentImage = img;
     return wait(2);
   }).then(() => {
     currentImage.style.display = 'none';
