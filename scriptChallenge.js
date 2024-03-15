@@ -38,34 +38,35 @@ const createImg = function (imgPath) {
   });
 };
 
-// createImg('/img/img-1.jpg').then(() => {
-// return wait(2);
-// }).then(() => {
-//   currentImage.style.display = 'none';
-//   return createImg('/img/img-2.jpg');
-// }).then(() => {
-//   return wait(2);
-// }).then(() => {
-//   currentImage.style.display = 'none';
-// })
-// .catch(err => {
-//   console.log(err);
-// })
-
-// createImg('/img/img-1.jpg').then((img) => {
-//   return wait(2);
-//   }).then(() => {
-//     currentImage.style.display = 'none';
-//     return createImg('/img/img-2.jpg');
-//   }).then(() => {
-//     return wait(2);
-//   }).then(() => {
-//     currentImage.style.display = 'none';
-//   })
-//   .catch(err => {
-//     console.log(err);
-//   })
-
 createImg('/img/img-1.jpg').then(() => {
-  console.log('blah 1');
-});
+return wait(2);
+}).then(() => {
+  currentImage.style.display = 'none';
+  return createImg('/img/img-2.jpg');
+}).then(() => {
+  return wait(2);
+}).then(() => {
+  currentImage.style.display = 'none';
+})
+.catch(err => {
+  console.log(err);
+})
+
+
+// JS solution
+createImg('/img/img-1.jpg')
+.then((img) => {
+  currentImage = img;
+  return wait(2);
+  }).then(() => {
+    currentImage.style.display = 'none';
+    return createImg('/img/img-2.jpg');
+  }).then((img) => {
+    return wait(2);
+  }).then(() => {
+    currentImage.style.display = 'none';
+  })
+  .catch(err => {
+    console.log(err);
+  })
+

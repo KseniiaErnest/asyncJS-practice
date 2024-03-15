@@ -304,8 +304,6 @@ const getCountryData = function (country) {
 
 // getCountryData('australia');
 
-
-
 ////////////////////////
 // Challenge 1
 /*
@@ -397,6 +395,7 @@ Promise.reject('abc').catch(x => console.log(x));
 //   })
 // }
 
+/*
 const getPosition = function() {
   return new Promise(function(resolve, reject) {
     navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -434,3 +433,139 @@ const whereAmI = function () {
 };
 
 btn.addEventListener('click', whereAmI);
+*/
+
+//////////////////////////////////////////////////////////////
+// Async/Await
+/*
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+const whereAmI = async function () {
+  // Geolocation
+  try {
+    const pos = await getPosition();
+    const { latitude: lat, longitude: lng } = pos.coords;
+
+    // Reverse geocoding
+    const resGeo = await fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`);
+    if (!resGeo.ok) throw new Error('Problem getting location data');
+    const dataGeo = await resGeo.json();
+
+    // Country data
+    const res = await fetch(
+      `https://restcountries.com/v3.1/name/${dataGeo.country}`
+    );
+    if (!res.ok) throw new Error('Problem getting country');
+    const data = await res.json();
+    renderCountry(data[0]);
+
+    return `You are in ${dataGeo.city}, ${dataGeo.country}`;
+  } catch (err) {
+    renderError(err.message);
+
+    // Reject promise returned from async function
+    throw err;
+  }
+};
+// whereAmI();
+// console.log('FIRST');
+
+// try {
+//   let y = 1;
+//   const x = 2;
+//   x = 3
+// } catch(err) {
+//   alert(err.message);
+// }
+
+// console.log('1: Will get location');
+// // const city = whereAmI();
+// // console.log(city);
+// whereAmI()
+//   .then(city => console.log(city))
+//   .catch(err => console.log(`2: ${err.message}`))
+//   .finally(() => console.log('3: Finished getting location'));
+
+(async function () {
+  try {
+    const city = await whereAmI();
+    console.log(city);
+  } catch (err) {
+    console.log(err.message);
+  } finally {
+    console.log('something');
+  }
+})();
+*/
+
+///////////////////////////////////////////////////////////////////
+// Running Promises in Parallel
+/*
+const get3Countries = async function (c1, c2, c3) {
+  try {
+    // const [data1] = await getJSON(`https://restcountries.com/v3.1/name/${c1}`);
+    // const [data2] = await getJSON(`https://restcountries.com/v3.1/name/${c2}`);
+    // const [data3] = await getJSON(`https://restcountries.com/v3.1/name/${c3}`);
+
+    const data = await Promise.all([
+      getJSON(`https://restcountries.com/v3.1/name/${c1}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c2}`),
+      getJSON(`https://restcountries.com/v3.1/name/${c3}`),
+    ]);
+
+    console.log(data.map(d => d[0].capital));
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+get3Countries('portugal', 'canada', 'tanzania');
+*/
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Promise.race
+(async function () {
+  const res = await Promise.race([
+    getJSON(`https://restcountries.com/v3.1/name/italy`),
+    getJSON(`https://restcountries.com/v3.1/name/egypt`),
+    getJSON(`https://restcountries.com/v3.1/name/mexico`),
+  ]);
+  console.log(res[0]);
+})();
+
+const timeout = function (seconds) {
+  return new Promise(function (_, reject) {
+    setTimeout(function () {
+      reject(new Error('Request took too long!'));
+    }, seconds * 1000);
+  });
+};
+
+Promise.race([
+  getJSON(`https://restcountries.com/v3.1/name/tanzania`),
+  timeout(0.1),
+])
+  .then(res => console.log(res[0]))
+  .catch(err => console.log(err));
+
+// Promise.allSettled
+Promise.allSettled([
+  Promise.resolve('Success'),
+  Promise.reject('Error'),
+  Promise.resolve('Anothe Success'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.log(err));
+
+// Promise.any
+Promise.any([
+  Promise.resolve('Success ANY'),
+  Promise.reject('Error ANY'),
+  Promise.resolve('Another Success ANY'),
+])
+  .then(res => console.log(res))
+  .catch(err => console.log(err));
